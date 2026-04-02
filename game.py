@@ -20,6 +20,15 @@ bg = pygame.image.load("img/background.png")
 def draw_bg():
     screen.blit(bg, (0, 0))
 
+# Criação da Nave
+class nave(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("img/nave.png")
+        self.react = self.image.get_react()
+        self.react.center = [x, y]
+        
+
 run = True
 while run:
 
