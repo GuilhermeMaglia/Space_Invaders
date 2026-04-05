@@ -55,8 +55,7 @@ class nave(pygame.sprite.Sprite):
             self.rect.x -= speed
         if key[pygame.K_RIGHT] and self.rect.right < screen_width:
             self.rect.x += speed
-
-
+    
         # cooldown
         time_now = pygame.time.get_ticks()
 
@@ -66,6 +65,8 @@ class nave(pygame.sprite.Sprite):
             balas_grupo.add(balas)
             self.last_shot = time_now
 
+        # Update mascara
+        self.mask = pygame.mask.from_surface(self.image)
 
         # Desenha barra de vida
         pygame.draw.rect(screen, red, (self.rect.x, (self.rect.bottom + 10), self.rect.width, 15 ))
@@ -83,6 +84,8 @@ class Balas(pygame.sprite.Sprite):
     def update(self):
         self.rect.y -= 5
         if self.rect.bottom < 0:
+            self.kill()
+        if pygame.sprite.spritecollide(self, alien_grupo, True):
             self.kill()
 
 # Criação da classe aliens
@@ -114,6 +117,10 @@ class Alien_Balas(pygame.sprite.Sprite):
         self.rect.y += 2
         if self.rect.top > screen_height:
             self.kill()
+        if pygame.sprite.spritecollide(self, nave_grupo, False, pygame.sprite.collide_mask):
+            self.kill()
+            # Reduzir vida da nave 
+            nave.health_remaining -= 1 
 
 
 # Criação do grupo sprites
