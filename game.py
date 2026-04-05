@@ -1,5 +1,7 @@
 import pygame
 from pygame.locals import*
+import random
+
 
 #fps
 clock = pygame.time.Clock()
@@ -12,6 +14,11 @@ screen_height = 800
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Space Invaders')
+
+
+# Define variaveis de jogo
+rows = 5
+cols = 5
 
 
 # Define cores
@@ -76,9 +83,38 @@ class Balas(pygame.sprite.Sprite):
         if self.rect.bottom < 0:
             self.kill()
 
+# Criação da classe aliens
+class Aliens(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("img/alien" + str(random.randint(1, 5)) + ".png")
+        self.rect = self.image.get_rect()
+        self.rect.center = [x, y]
+        self.move_counter = 0
+        self.move_direction = 1
+
+    def update(self):
+        self.rect.x += self.move_direction
+        self.move_counter += 1
+        if abs(self.move_counter) > 75:
+            self.move_direction *= -1
+            self.move_counter *= self.move_direction
+
+
 # Criação do grupo sprites
 nave_grupo = pygame.sprite.Group()
 balas_grupo = pygame.sprite.Group()
+alien_grupo = pygame.sprite.Group()
+
+def cria_aliens():
+    # Gerador de aliens
+    for row in range(rows):
+        for item in range(cols):
+            alien = Aliens(100 + item * 100, 100 + row * 70)
+            alien_grupo.add(alien)
+
+cria_aliens()
+
 
 # Criação do player
 nave = nave(int(screen_width / 2), screen_height - 100, 3)
@@ -99,10 +135,12 @@ while run:
     nave.update()
 
     balas_grupo.update()
+    alien_grupo.update()
 
     # Atualiza o grupo sprites
     nave_grupo.draw(screen)
     balas_grupo.draw(screen)
+    alien_grupo.draw(screen)
 
 
     pygame.display.update()
