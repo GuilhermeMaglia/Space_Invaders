@@ -72,6 +72,10 @@ class nave(pygame.sprite.Sprite):
         pygame.draw.rect(screen, red, (self.rect.x, (self.rect.bottom + 10), self.rect.width, 15 ))
         if self.health_remaining > 0:
             pygame.draw.rect(screen, green, (self.rect.x, (self.rect.bottom + 10), int(self.rect.width * (self.health_remaining / self.health_start)), 15 ))
+        elif self.health_remaining <= 0:
+            explosao = Explosao(self.rect.centerx, self.rect.centery, 3)
+            explosao_grupo.add(explosao)
+            self.kill()
 
 # Classe Balas
 class Balas(pygame.sprite.Sprite):
@@ -87,6 +91,8 @@ class Balas(pygame.sprite.Sprite):
             self.kill()
         if pygame.sprite.spritecollide(self, alien_grupo, True):
             self.kill()
+            explosao = Explosao(self.rect.centerx, self.rect.centery, 2)
+            explosao_grupo.add(explosao)
 
 # Criação da classe aliens
 class Aliens(pygame.sprite.Sprite):
@@ -120,7 +126,45 @@ class Alien_Balas(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(self, nave_grupo, False, pygame.sprite.collide_mask):
             self.kill()
             # Reduzir vida da nave 
-            nave.health_remaining -= 1 
+            nave.health_remaining -= 1
+            explosao = Explosao(self.rect.centerx, self.rect.centery, 1)
+            explosao_grupo.add(explosao)
+
+
+# Criação da classe explosão
+class Explosao(pygame.sprite.Sprite):
+    def __init__(self, x, y, size):
+        pygame.sprite.Sprite.__init__(self)
+        self.images = []
+        for num in range(1, 6):
+            img = pygame.image.load(f"img/exp{num}.png")
+            if size == 1:
+                img = pygame.transform.scale(img, (20, 20))
+            if size == 2:
+                img = pygame.transform.scale(img, (40, 40))
+            if size == 3:
+                img = pygame.transform.scale(img, (160, 160))
+            # Adição de lista de imagens
+            self.images.append(img)
+        self.index = 0
+        self.image = self.images[self.index]
+        self.rect = self.image.get_rect()
+        self.rect.center = [x, y]
+        self.counter = 0
+
+
+    def update(self):
+        explosao_speed = 3
+        # Update animação de explosão
+        self.counter += 1
+
+        if self.counter >= explosao_speed and self.index < len(self.images) - 1:
+            self.counter = 0
+            self.index += 1
+            self.image = self.images[self.index]
+
+        if self.index >= len(self.images) - 1 and self.counter >= explosao_speed:
+            self.kill()
 
 
 # Criação do grupo sprites
@@ -128,6 +172,7 @@ nave_grupo = pygame.sprite.Group()
 balas_grupo = pygame.sprite.Group()
 alien_grupo = pygame.sprite.Group()
 alien_balas_grupo = pygame.sprite.Group()
+explosao_grupo = pygame.sprite.Group()
 
 def cria_aliens():
     # Gerador de aliens
@@ -170,12 +215,14 @@ while run:
     balas_grupo.update()
     alien_grupo.update()
     alien_balas_grupo.update()
+    explosao_grupo.update()
 
     # Atualiza o grupo sprites
     nave_grupo.draw(screen)
     balas_grupo.draw(screen)
     alien_grupo.draw(screen)
     alien_balas_grupo.draw(screen)
+    explosao_grupo.draw(screen)
 
 
     pygame.display.update()
