@@ -5,6 +5,7 @@ import random
 
 pygame.mixer.pre_init(44100, -16, 2, 512)
 mixer.init()
+pygame.font.init()
 
 #fps
 clock = pygame.time.Clock()
@@ -17,6 +18,12 @@ screen_height = 800
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Space Invaders')
+
+
+
+# Definir fontes
+font30 = pygame.font.SysFont('constantia', 30)
+font40 = pygame.font.SysFont('constantia', 40)
 
 
 # Sons
@@ -35,17 +42,29 @@ rows = 5
 cols = 5
 alien_cooldown = 1000  #milisegundos
 last_alien_shot = pygame.time.get_ticks()
+countdown = 3
+last_count = pygame.time.get_ticks()
+game_over = 0 
 
 
 # Define cores
 red = (255, 0, 0)
 green = (0, 255, 5)
+white = (255, 255, 255)
 
 
 bg = pygame.image.load("img/background.png")
 
 def draw_bg():
     screen.blit(bg, (0, 0))
+
+
+# Função para criar texto
+def draw_text(text, font, text_col, x, y):
+    img = font.render(text, True, text_col)
+    screen.blit(img, (x, y))
+
+
 
 # Criação da classe Nave
 class nave(pygame.sprite.Sprite):
@@ -63,6 +82,7 @@ class nave(pygame.sprite.Sprite):
 
         #Variavel cooldown
         cooldown = 500 #milisegundos
+        game_over = 0
 
         key = pygame.key.get_pressed()
         if key[pygame.K_LEFT] and self.rect.left > 0:
@@ -91,6 +111,8 @@ class nave(pygame.sprite.Sprite):
             explosao = Explosao(self.rect.centerx, self.rect.centery, 3)
             explosao_grupo.add(explosao)
             self.kill()
+            game_over = -1
+        return game_over
 
 # Classe Balas
 class Balas(pygame.sprite.Sprite):
@@ -210,31 +232,58 @@ while run:
 
     clock.tick(fps)
 
+    # Processa eventos
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+
     #desenha o background
     draw_bg()
 
 
-    # Cria balas dos aliens
-    time_now = pygame.time.get_ticks()
-    # Tiro
-    if time_now - last_alien_shot > alien_cooldown and len(alien_balas_grupo) < 5 and len(alien_grupo) > 0:
-        ataque_alien = random.choice(alien_grupo.sprites())
-        alien_balas = Alien_Balas(ataque_alien.rect.centerx, ataque_alien.rect.bottom)
-        alien_balas_grupo.add(alien_balas)
-        last_alien_shot = time_now
+    if countdown == 0:
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-    
-    nave.update()
+        # Cria balas dos aliens
+        time_now = pygame.time.get_ticks()
+        # Tiro
+        if time_now - last_alien_shot > alien_cooldown and len(alien_balas_grupo) < 5 and len(alien_grupo) > 0:
+            ataque_alien = random.choice(alien_grupo.sprites())
+            alien_balas = Alien_Balas(ataque_alien.rect.centerx, ataque_alien.rect.bottom)
+            alien_balas_grupo.add(alien_balas)
+            last_alien_shot = time_now
 
-    balas_grupo.update()
-    alien_grupo.update()
-    alien_balas_grupo.update()
+        if len(alien_grupo) == 0:
+            game_over = 1
+
+        if game_over == 0:
+     
+            game_over = nave.update()
+
+            # Atualiza o grupo 
+            balas_grupo.update()
+            alien_grupo.update()
+            alien_balas_grupo.update()
+        else:
+            if game_over == -1:
+                draw_text('GAME OVER', font40, white, int(screen_width/2 - 110), int(screen_height / 2 + 50))
+            if game_over == 1:
+                draw_text('VOCÊ VENCEU', font40, white, int(screen_width/2 - 110), int(screen_height / 2 + 50))
+                
+
+
+    if countdown > 0:
+        draw_text('PREPARE-SE!', font40, white, int(screen_width/2 - 110), int(screen_height / 2 + 50))
+        draw_text(str(countdown), font40, white, int(screen_width/2 - 10), int(screen_height / 2 + 10))
+        count_timer = pygame.time.get_ticks()
+        if count_timer - last_count > 1000:
+            countdown -= 1
+            last_count = count_timer
+   
+    # Atualiza explosao_grupo
     explosao_grupo.update()
 
-    # Atualiza o grupo sprites
+
+    # Desenha grupos
     nave_grupo.draw(screen)
     balas_grupo.draw(screen)
     alien_grupo.draw(screen)
