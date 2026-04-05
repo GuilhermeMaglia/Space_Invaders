@@ -19,6 +19,8 @@ pygame.display.set_caption('Space Invaders')
 # Define variaveis de jogo
 rows = 5
 cols = 5
+alien_cooldown = 1000  #milisegundos
+last_alien_shot = pygame.time.get_ticks()
 
 
 # Define cores
@@ -100,11 +102,25 @@ class Aliens(pygame.sprite.Sprite):
             self.move_direction *= -1
             self.move_counter *= self.move_direction
 
+# Classe Balas dos Aliens
+class Alien_Balas(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("img/alien_bullet.png")
+        self.rect = self.image.get_rect()
+        self.rect.center = [x, y]
+
+    def update(self):
+        self.rect.y += 2
+        if self.rect.top > screen_height:
+            self.kill()
+
 
 # Criação do grupo sprites
 nave_grupo = pygame.sprite.Group()
 balas_grupo = pygame.sprite.Group()
 alien_grupo = pygame.sprite.Group()
+alien_balas_grupo = pygame.sprite.Group()
 
 def cria_aliens():
     # Gerador de aliens
@@ -128,6 +144,16 @@ while run:
     #desenha o background
     draw_bg()
 
+
+    # Cria balas dos aliens
+    time_now = pygame.time.get_ticks()
+    # Tiro
+    if time_now - last_alien_shot > alien_cooldown and len(alien_balas_grupo) < 5 and len(alien_grupo) > 0:
+        ataque_alien = random.choice(alien_grupo.sprites())
+        alien_balas = Alien_Balas(ataque_alien.rect.centerx, ataque_alien.rect.bottom)
+        alien_balas_grupo.add(alien_balas)
+        last_alien_shot = time_now
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -136,11 +162,13 @@ while run:
 
     balas_grupo.update()
     alien_grupo.update()
+    alien_balas_grupo.update()
 
     # Atualiza o grupo sprites
     nave_grupo.draw(screen)
     balas_grupo.draw(screen)
     alien_grupo.draw(screen)
+    alien_balas_grupo.draw(screen)
 
 
     pygame.display.update()
