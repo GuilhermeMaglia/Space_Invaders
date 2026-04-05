@@ -1,7 +1,10 @@
 import pygame
+from pygame import mixer
 from pygame.locals import*
 import random
 
+pygame.mixer.pre_init(44100, -16, 2, 512)
+mixer.init()
 
 #fps
 clock = pygame.time.Clock()
@@ -14,6 +17,17 @@ screen_height = 800
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Space Invaders')
+
+
+# Sons
+explosao_fx = pygame.mixer.Sound("img/explosion.wav")
+explosao_fx.set_volume(0.25)
+
+explosao2_fx = pygame.mixer.Sound("img/explosion2.wav")
+explosao2_fx.set_volume(0.25)
+
+laser_fx = pygame.mixer.Sound("img/laser.wav")
+laser_fx.set_volume(0.25)
 
 
 # Define variaveis de jogo
@@ -61,6 +75,7 @@ class nave(pygame.sprite.Sprite):
 
         #atirar
         if key[pygame.K_SPACE] and time_now - self.last_shot > cooldown:
+            laser_fx.play()
             balas = Balas(self.rect.centerx, self.rect.top)
             balas_grupo.add(balas)
             self.last_shot = time_now
@@ -91,6 +106,7 @@ class Balas(pygame.sprite.Sprite):
             self.kill()
         if pygame.sprite.spritecollide(self, alien_grupo, True):
             self.kill()
+            explosao_fx.play()
             explosao = Explosao(self.rect.centerx, self.rect.centery, 2)
             explosao_grupo.add(explosao)
 
@@ -125,6 +141,7 @@ class Alien_Balas(pygame.sprite.Sprite):
             self.kill()
         if pygame.sprite.spritecollide(self, nave_grupo, False, pygame.sprite.collide_mask):
             self.kill()
+            explosao2_fx.play()
             # Reduzir vida da nave 
             nave.health_remaining -= 1
             explosao = Explosao(self.rect.centerx, self.rect.centery, 1)
