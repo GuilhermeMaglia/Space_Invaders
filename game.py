@@ -39,7 +39,9 @@ white = (255, 255, 255)
 # Variáveis Globais de Jogo
 rows = 5
 cols = 5
-alien_cooldown = 1000 
+alien_cooldown = 1500
+alien_min_cooldown = 400
+alien_cooldown_step = 75
 last_alien_shot = pygame.time.get_ticks()
 countdown = 3
 last_count = pygame.time.get_ticks()
@@ -157,12 +159,12 @@ class Aliens(pygame.sprite.Sprite):
         self.move_direction = 1
 
     def update(self):
-        # A velocidade aumenta conforme a onda (wave)
-        self.rect.x += self.move_direction + (wave * 0.2)
-        self.move_counter += 1
+        speed = 1 + (wave * 0.2)
+        self.rect.x += self.move_direction * speed
+        self.move_counter += self.move_direction * speed
         if abs(self.move_counter) > 75:
             self.move_direction *= -1
-            self.move_counter *= self.move_direction
+            self.move_counter = 0
 
 class Alien_Balas(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -245,7 +247,7 @@ while run:
     if countdown == 0:
         time_now = pygame.time.get_ticks()
         # Tiro alienígena mais frequente conforme as ondas passam
-        current_cooldown = max(200, alien_cooldown - (wave * 50))
+        current_cooldown = max(alien_min_cooldown, alien_cooldown - ((wave - 1) * alien_cooldown_step))
         if time_now - last_alien_shot > current_cooldown and len(alien_balas_grupo) < 5 and len(alien_grupo) > 0:
             ataque_alien = random.choice(alien_grupo.sprites())
             alien_balas = Alien_Balas(ataque_alien.rect.centerx, ataque_alien.rect.bottom)

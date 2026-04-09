@@ -1,2 +1,7 @@
 Nome: guilherme | Pontos: 470 | Onda: 2
 Nome: gui | Pontos: 480 | Onda: 2
+Nome: guilherme | Pontos: 230 | Onda: 1
+Nome: Alessandro | Pontos: 110 | Onda: 1
+Nome: neymar | Pontos: 110 | Onda: 1
+Nome: marcus | Pontos: 230 | Onda: 1
+Nome: marcelo | Pontos: 730 | Onda: 3
