@@ -4,12 +4,11 @@ from pygame.locals import *
 import random
 import os
 
-# Inicialização
 pygame.mixer.pre_init(44100, -16, 2, 512)
 mixer.init()
 pygame.font.init()
 
-# FPS
+
 clock = pygame.time.Clock()
 fps = 60
 
@@ -18,11 +17,9 @@ screen_height = 800
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Space Invaders - Pro Edition')
 
-# Fontes
 font30 = pygame.font.SysFont('constantia', 30)
 font40 = pygame.font.SysFont('constantia', 40)
 
-# Sons 
 try:
     explosao_fx = pygame.mixer.Sound("img/explosion.wav")
     explosao2_fx = pygame.mixer.Sound("img/explosion2.wav")
@@ -31,12 +28,10 @@ try:
 except:
     print("Arquivos de som não encontrados. Verifique a pasta img/")
 
-# Cores
 red = (255, 0, 0)
 green = (0, 255, 5)
 white = (255, 255, 255)
 
-# Variáveis Globais de Jogo
 rows = 5
 cols = 5
 alien_cooldown = 1500
@@ -50,7 +45,6 @@ score = 0
 wave = 1
 user_name = ""
 
-# Carregar Background
 bg = pygame.image.load("img/background.png")
 
 def draw_bg():
@@ -60,7 +54,6 @@ def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
 
-# --- NOVO: SISTEMA DE SCORE E NOME ---
 def save_score(name, final_score):
     with open("highscores.txt", "a") as file:
         file.write(f"Nome: {name} | Pontos: {final_score} | Onda: {wave}\n")
@@ -84,14 +77,13 @@ def get_user_name():
                 elif event.key == pygame.K_BACKSPACE:
                     name = name[:-1]
                 else:
-                    if len(name) < 15: # Limite de caracteres
+                    if len(name) < 15: 
                         name += event.unicode
         
         pygame.display.update()
         clock.tick(fps)
     return name
 
-# Classes 
 class nave(pygame.sprite.Sprite):
     def __init__(self, x, y, health):
         pygame.sprite.Sprite.__init__(self)
@@ -138,13 +130,13 @@ class Balas(pygame.sprite.Sprite):
         self.rect.center = [x, y]
 
     def update(self):
-        global score # Acessa a pontuação global
+        global score 
         self.rect.y -= 5
         if self.rect.bottom < 0:
             self.kill()
         if pygame.sprite.spritecollide(self, alien_grupo, True):
             self.kill()
-            score += 10 # Adiciona pontos por alien
+            score += 10 
             explosao_fx.play()
             explosao = Explosao(self.rect.centerx, self.rect.centery, 2)
             explosao_grupo.add(explosao)
@@ -210,7 +202,6 @@ class Explosao(pygame.sprite.Sprite):
         if self.index >= len(self.images) - 1 and self.counter >= explosao_speed:
             self.kill()
 
-# Grupos
 nave_grupo = pygame.sprite.Group()
 balas_grupo = pygame.sprite.Group()
 alien_grupo = pygame.sprite.Group()
@@ -223,8 +214,7 @@ def cria_aliens():
             alien = Aliens(100 + item * 100, 100 + row * 70)
             alien_grupo.add(alien)
 
-# Início do Jogo
-user_name = get_user_name() # Pega o nome antes de começar
+user_name = get_user_name() 
 cria_aliens()
 player = nave(int(screen_width / 2), screen_height - 100, 3)
 nave_grupo.add(player)
@@ -235,7 +225,6 @@ while run:
     clock.tick(fps)
     draw_bg()
 
-    # --- HUD (Display de Pontos e Ondas) ---
     draw_text(f"Piloto: {user_name}", font30, white, 10, 10)
     draw_text(f"Score: {score}", font30, white, 10, 40)
     draw_text(f"Onda: {wave}", font30, white, screen_width - 120, 10)
@@ -246,7 +235,6 @@ while run:
 
     if countdown == 0:
         time_now = pygame.time.get_ticks()
-        # Tiro alienígena mais frequente conforme as ondas passam
         current_cooldown = max(alien_min_cooldown, alien_cooldown - ((wave - 1) * alien_cooldown_step))
         if time_now - last_alien_shot > current_cooldown and len(alien_balas_grupo) < 5 and len(alien_grupo) > 0:
             ataque_alien = random.choice(alien_grupo.sprites())
@@ -254,11 +242,10 @@ while run:
             alien_balas_grupo.add(alien_balas)
             last_alien_shot = time_now
 
-        # SISTEMA DE ONDAS
         if len(alien_grupo) == 0:
             wave += 1
             cria_aliens()
-            countdown = 3 # Pequena pausa entre ondas
+            countdown = 3 
 
         if game_over == 0:
             game_over = player.update()
@@ -270,7 +257,6 @@ while run:
                 draw_text('GAME OVER', font40, white, int(screen_width/2 - 110), int(screen_height / 2))
                 draw_text(f'Final Score: {score}', font30, green, int(screen_width/2 - 100), int(screen_height / 2 + 50))
                 
-                # Salva apenas uma vez quando morre
                 if not score_saved:
                     save_score(user_name, score)
                     score_saved = True
